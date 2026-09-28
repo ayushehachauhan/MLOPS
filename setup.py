@@ -10,6 +10,7 @@ def get_requirements(file_path:str)->List[str]:
             requirements.remove(HYPEN_edot)
         return requirements
 
+    
 setup(
 name="MLOPS project",
 version="0.0.1",
