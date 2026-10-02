@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from src.pipeline.predict_pipeline import CustomData,PredictPipeline
 
-
+#demo commit
 from sklearn.preprocessing import StandardScaler
 
 application=Flask(__name__)
