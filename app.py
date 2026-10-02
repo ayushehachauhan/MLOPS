@@ -5,6 +5,7 @@ from src.pipeline.predict_pipeline import CustomData,PredictPipeline
 
 #demo commit
 #demo commit 2
+#demo commit 3
 from sklearn.preprocessing import StandardScaler
 
 application=Flask(__name__)
