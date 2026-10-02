@@ -50,7 +50,7 @@ class ModelTrainer:
                     pass
 
 
-            best_model=[best_model_name]
+            best_model=models[best_model_name]
 
             
             logging.info(f"best model was found to be {best_model_name}")

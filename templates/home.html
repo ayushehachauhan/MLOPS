@@ -1,0 +1,2080 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PlacementAI | Student Placement Prediction</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+
+        /* =========================================================
+           RESET
+        ========================================================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #060816;
+            --bg2: #0a0e21;
+
+            --card: rgba(17, 23, 45, 0.76);
+            --card-light: rgba(255,255,255,0.045);
+
+            --border: rgba(255,255,255,0.09);
+
+            --text: #f7f8ff;
+            --muted: #9199b2;
+
+            --purple: #7c5cff;
+            --blue: #00d9ff;
+
+            --green: #00e676;
+            --red: #ff4d67;
+
+            --radius: 18px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+
+            font-family: "Inter", sans-serif;
+
+            background:
+                radial-gradient(
+                    circle at 15% 10%,
+                    rgba(124,92,255,0.16),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 85% 25%,
+                    rgba(0,217,255,0.11),
+                    transparent 27%
+                ),
+                linear-gradient(
+                    135deg,
+                    var(--bg),
+                    var(--bg2)
+                );
+
+            color: var(--text);
+
+            overflow-x: hidden;
+        }
+
+
+        /* =========================================================
+           BACKGROUND GRID
+        ========================================================= */
+
+        body::after {
+            content: "";
+
+            position: fixed;
+            inset: 0;
+
+            pointer-events: none;
+
+            background-image:
+                linear-gradient(
+                    rgba(255,255,255,0.025) 1px,
+                    transparent 1px
+                ),
+                linear-gradient(
+                    90deg,
+                    rgba(255,255,255,0.025) 1px,
+                    transparent 1px
+                );
+
+            background-size: 45px 45px;
+
+            mask-image:
+                linear-gradient(
+                    to bottom,
+                    black,
+                    transparent
+                );
+
+            z-index: -5;
+        }
+
+
+        /* =========================================================
+           FLOATING GLOW
+        ========================================================= */
+
+        .glow {
+            position: fixed;
+
+            width: 260px;
+            height: 260px;
+
+            border-radius: 50%;
+
+            filter: blur(90px);
+
+            opacity: 0.18;
+
+            pointer-events: none;
+
+            z-index: -3;
+
+            animation: float 9s ease-in-out infinite;
+        }
+
+        .glow-purple {
+            background: var(--purple);
+            left: -100px;
+            top: 25%;
+        }
+
+        .glow-blue {
+            background: var(--blue);
+            right: -100px;
+            top: 52%;
+
+            animation-delay: 2s;
+        }
+
+        .glow-pink {
+            background: #ff3ca6;
+            left: 50%;
+            bottom: -130px;
+
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(25px, -30px);
+            }
+        }
+
+
+        /* =========================================================
+           NAVBAR
+        ========================================================= */
+
+        nav {
+            position: sticky;
+
+            top: 0;
+
+            z-index: 100;
+
+            height: 74px;
+
+            padding: 0 7%;
+
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            background: rgba(6,8,22,0.72);
+
+            backdrop-filter: blur(20px);
+
+            border-bottom:
+                1px solid rgba(255,255,255,0.06);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+
+            gap: 12px;
+
+            font-family: "Space Grotesk", sans-serif;
+
+            font-size: 21px;
+
+            font-weight: 700;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 13px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--purple),
+                    var(--blue)
+                );
+
+            box-shadow:
+                0 0 28px rgba(124,92,255,0.38);
+        }
+
+        .brand-text {
+            background:
+                linear-gradient(
+                    90deg,
+                    #ffffff,
+                    #aeb8ff
+                );
+
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .model-status {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+
+            padding: 9px 15px;
+
+            border: 1px solid var(--border);
+
+            border-radius: 999px;
+
+            font-size: 12px;
+
+            color: var(--muted);
+
+            background:
+                rgba(255,255,255,0.025);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+
+            border-radius: 50%;
+
+            background: var(--green);
+
+            box-shadow:
+                0 0 12px var(--green);
+        }
+
+
+        /* =========================================================
+           HERO
+        ========================================================= */
+
+        .hero {
+            width: min(1050px, 92%);
+
+            margin: auto;
+
+            padding: 78px 20px 45px;
+
+            text-align: center;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            padding: 8px 15px;
+
+            border-radius: 999px;
+
+            border:
+                1px solid rgba(124,92,255,0.28);
+
+            background:
+                rgba(124,92,255,0.08);
+
+            color: #b8adff;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            letter-spacing: 0.8px;
+
+            margin-bottom: 25px;
+        }
+
+        .hero h1 {
+            font-family:
+                "Space Grotesk",
+                sans-serif;
+
+            font-size:
+                clamp(42px, 7vw, 80px);
+
+            line-height: 0.98;
+
+            letter-spacing: -3px;
+
+            max-width: 900px;
+
+            margin: auto;
+        }
+
+        .gradient-text {
+            background:
+                linear-gradient(
+                    90deg,
+                    #8c72ff,
+                    #00d9ff,
+                    #70f1ff
+                );
+
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            max-width: 690px;
+
+            margin: 25px auto 0;
+
+            color: var(--muted);
+
+            font-size: 15px;
+
+            line-height: 1.8;
+        }
+
+
+        /* =========================================================
+           INFO CARDS
+        ========================================================= */
+
+        .stats {
+            width: min(1000px, 92%);
+
+            margin: 0 auto 45px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 16px;
+        }
+
+        .stat {
+            position: relative;
+
+            padding: 21px;
+
+            border-radius: var(--radius);
+
+            background:
+                var(--card-light);
+
+            border:
+                1px solid var(--border);
+
+            backdrop-filter: blur(15px);
+
+            transition: 0.3s;
+        }
+
+        .stat:hover {
+            transform: translateY(-5px);
+
+            border-color:
+                rgba(124,92,255,0.35);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 11px;
+
+            margin-bottom: 12px;
+
+            background:
+                rgba(124,92,255,0.1);
+
+            color: #a99cff;
+        }
+
+        .stat h3 {
+            font-size: 23px;
+
+            font-family:
+                "Space Grotesk",
+                sans-serif;
+        }
+
+        .stat p {
+            margin-top: 5px;
+
+            font-size: 11px;
+
+            color: var(--muted);
+        }
+
+
+        /* =========================================================
+           MAIN
+        ========================================================= */
+
+        .main {
+            width: min(1100px, 92%);
+
+            margin: auto;
+        }
+
+
+        /* =========================================================
+           FORM CARD
+        ========================================================= */
+
+        .form-card {
+            position: relative;
+
+            padding: 38px;
+
+            border-radius: 28px;
+
+            background:
+                var(--card);
+
+            border:
+                1px solid var(--border);
+
+            backdrop-filter:
+                blur(24px);
+
+            box-shadow:
+                0 35px 100px rgba(0,0,0,0.38),
+                inset 0 1px rgba(255,255,255,0.05);
+        }
+
+
+        /* =========================================================
+           SECTION
+        ========================================================= */
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section:last-of-type {
+            margin-bottom: 15px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+
+            gap: 14px;
+
+            margin-bottom: 22px;
+
+            padding-bottom: 13px;
+
+            border-bottom:
+                1px solid rgba(255,255,255,0.055);
+        }
+
+        .section-icon {
+            width: 45px;
+            height: 45px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            border-radius: 13px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(124,92,255,0.22),
+                    rgba(0,217,255,0.10)
+                );
+
+            border:
+                1px solid rgba(124,92,255,0.2);
+
+            color: #aa9cff;
+        }
+
+        .section-title h2 {
+            font-family:
+                "Space Grotesk",
+                sans-serif;
+
+            font-size: 19px;
+        }
+
+        .section-title p {
+            color: var(--muted);
+
+            font-size: 11px;
+
+            margin-top: 3px;
+        }
+
+
+        /* =========================================================
+           FORM GRID
+        ========================================================= */
+
+        .grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+            gap: 19px;
+        }
+
+        .field.full {
+            grid-column:
+                1 / -1;
+        }
+
+        .field label {
+            display: block;
+
+            color: #dfe3f3;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            margin-bottom: 8px;
+        }
+
+
+        /* =========================================================
+           INPUT
+        ========================================================= */
+
+        .input-box {
+            position: relative;
+        }
+
+        .input-box > i:first-child {
+            position: absolute;
+
+            left: 15px;
+
+            top: 50%;
+
+            transform:
+                translateY(-50%);
+
+            color: #66708d;
+
+            font-size: 13px;
+
+            z-index: 2;
+
+            pointer-events: none;
+        }
+
+        input,
+        select {
+            width: 100%;
+
+            height: 51px;
+
+            border-radius: 12px;
+
+            border:
+                1px solid rgba(255,255,255,0.08);
+
+            background:
+                rgba(255,255,255,0.035);
+
+            color: #ffffff;
+
+            outline: none;
+
+            font-family:
+                "Inter",
+                sans-serif;
+
+            font-size: 13px;
+
+            padding:
+                0 42px 0 42px;
+
+            transition: 0.25s;
+        }
+
+        input:hover,
+        select:hover {
+            border-color:
+                rgba(255,255,255,0.17);
+        }
+
+        input:focus,
+        select:focus {
+            border-color:
+                rgba(124,92,255,0.8);
+
+            background:
+                rgba(124,92,255,0.06);
+
+            box-shadow:
+                0 0 0 3px
+                rgba(124,92,255,0.10);
+        }
+
+        input::placeholder {
+            color: #626b83;
+        }
+
+        select {
+            appearance: none;
+
+            cursor: pointer;
+        }
+
+        select option {
+            color: white;
+
+            background: #11162b;
+        }
+
+        .arrow {
+            position: absolute;
+
+            right: 15px;
+            top: 50%;
+
+            transform:
+                translateY(-50%);
+
+            pointer-events: none;
+
+            color: #68718a;
+        }
+
+        .percent {
+            position: absolute;
+
+            right: 15px;
+            top: 50%;
+
+            transform:
+                translateY(-50%);
+
+            color: #737c96;
+
+            font-size: 12px;
+
+            pointer-events: none;
+        }
+
+        .field-hint {
+            color: #667089;
+
+            font-size: 10px;
+
+            margin-top: 6px;
+        }
+
+
+        /* =========================================================
+           SUBMIT
+        ========================================================= */
+
+        .submit-area {
+            margin-top: 32px;
+
+            padding-top: 30px;
+
+            border-top:
+                1px solid rgba(255,255,255,0.06);
+
+            text-align: center;
+        }
+
+        .predict-btn {
+            position: relative;
+
+            width: min(600px, 100%);
+
+            height: 59px;
+
+            border: none;
+
+            border-radius: 14px;
+
+            cursor: pointer;
+
+            color: white;
+
+            overflow: hidden;
+
+            font-family:
+                "Space Grotesk",
+                sans-serif;
+
+            font-size: 15px;
+
+            font-weight: 700;
+
+            background:
+                linear-gradient(
+                    100deg,
+                    #7055ff,
+                    #8e69ff,
+                    #00cfe8
+                );
+
+            box-shadow:
+                0 14px 40px
+                rgba(87,74,230,0.28);
+
+            transition: 0.3s;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-3px);
+
+            box-shadow:
+                0 18px 50px
+                rgba(87,74,230,0.4);
+        }
+
+        .predict-btn:active {
+            transform: translateY(0);
+        }
+
+        .predict-btn::before {
+            content: "";
+
+            position: absolute;
+
+            top: 0;
+
+            left: -120%;
+
+            width: 75%;
+
+            height: 100%;
+
+            transform:
+                skewX(-20deg);
+
+            background:
+                linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(255,255,255,0.25),
+                    transparent
+                );
+
+            animation:
+                shine 4s infinite;
+        }
+
+        @keyframes shine {
+
+            0% {
+                left: -120%;
+            }
+
+            35%, 100% {
+                left: 140%;
+            }
+        }
+
+        .privacy {
+            color: #5e677f;
+
+            font-size: 10px;
+
+            margin-top: 12px;
+        }
+
+
+        /* =========================================================
+           RESULT
+        ========================================================= */
+
+        .result {
+            margin-top: 28px;
+
+            padding: 32px;
+
+            border-radius: 22px;
+
+            text-align: center;
+
+            animation:
+                resultIn 0.6s ease;
+        }
+
+        @keyframes resultIn {
+
+            from {
+                opacity: 0;
+                transform:
+                    translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform:
+                    translateY(0);
+            }
+        }
+
+        .result.placed {
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(0,230,118,0.10),
+                    rgba(0,217,255,0.05)
+                );
+
+            border:
+                1px solid
+                rgba(0,230,118,0.23);
+        }
+
+        .result.not-placed {
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(255,77,103,0.10),
+                    rgba(124,92,255,0.05)
+                );
+
+            border:
+                1px solid
+                rgba(255,77,103,0.23);
+        }
+
+        .result-icon {
+            width: 70px;
+            height: 70px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin:
+                0 auto 15px;
+
+            border-radius: 50%;
+
+            font-size: 28px;
+        }
+
+        .placed .result-icon {
+            color: var(--green);
+
+            background:
+                rgba(0,230,118,0.10);
+
+            box-shadow:
+                0 0 35px
+                rgba(0,230,118,0.12);
+        }
+
+        .not-placed .result-icon {
+            color: var(--red);
+
+            background:
+                rgba(255,77,103,0.10);
+        }
+
+        .result h2 {
+            font-family:
+                "Space Grotesk",
+                sans-serif;
+
+            font-size: 28px;
+
+            margin-bottom: 8px;
+        }
+
+        .result p {
+            color: var(--muted);
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+        .result-badge {
+            display: inline-block;
+
+            margin-top: 17px;
+
+            padding: 7px 13px;
+
+            border-radius: 999px;
+
+            font-size: 11px;
+
+            font-weight: 700;
+        }
+
+        .placed .result-badge {
+            color: #61ffae;
+
+            background:
+                rgba(0,230,118,0.09);
+        }
+
+        .not-placed .result-badge {
+            color: #ff8799;
+
+            background:
+                rgba(255,77,103,0.09);
+        }
+
+
+        /* =========================================================
+           FOOTER
+        ========================================================= */
+
+        footer {
+            padding: 50px 20px;
+
+            text-align: center;
+
+            color: #535d75;
+
+            font-size: 11px;
+        }
+
+        footer strong {
+            color: #897cff;
+        }
+
+
+        /* =========================================================
+           RESPONSIVE
+        ========================================================= */
+
+        @media (max-width: 760px) {
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .field.full {
+                grid-column: auto;
+            }
+
+            .form-card {
+                padding: 24px 18px;
+            }
+
+            .hero {
+                padding-top: 55px;
+            }
+
+            .hero h1 {
+                letter-spacing: -2px;
+            }
+
+            nav {
+                padding: 0 5%;
+            }
+
+            .model-status {
+                display: none;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <!-- Background effects -->
+    <div class="glow glow-purple"></div>
+    <div class="glow glow-blue"></div>
+    <div class="glow glow-pink"></div>
+
+
+    <!-- =========================================================
+         NAVBAR
+    ========================================================= -->
+
+    <nav>
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                <i class="fa-solid fa-brain"></i>
+            </div>
+
+            <div class="brand-text">
+                PlacementAI
+            </div>
+
+        </div>
+
+
+        <div class="model-status">
+
+            <span class="status-dot"></span>
+
+            ML Model Online
+
+        </div>
+
+    </nav>
+
+
+    <!-- =========================================================
+         HERO
+    ========================================================= -->
+
+    <section class="hero">
+
+        <div class="eyebrow">
+
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+            MACHINE LEARNING PREDICTION SYSTEM
+
+        </div>
+
+
+        <h1>
+
+            Predict Student
+
+            <span class="gradient-text">
+                Placement
+            </span>
+
+            with AI
+
+        </h1>
+
+
+        <p>
+
+            Enter the student's academic performance,
+            educational background and professional profile.
+            The trained machine learning model will analyze
+            the information and predict the placement outcome.
+
+        </p>
+
+    </section>
+
+
+    <!-- =========================================================
+         STATS
+    ========================================================= -->
+
+    <section class="stats">
+
+        <div class="stat">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-database"></i>
+            </div>
+
+            <h3>12</h3>
+
+            <p>Input Features</p>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-brain"></i>
+            </div>
+
+            <h3>ML</h3>
+
+            <p>Trained Prediction Model</p>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-bolt"></i>
+            </div>
+
+            <h3>Real-time</h3>
+
+            <p>Instant Prediction</p>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         MAIN FORM
+    ========================================================= -->
+
+    <main class="main">
+
+        <div class="form-card">
+
+
+            <!-- =====================================================
+                 FORM
+            ====================================================== -->
+
+            <form
+                action="{{ url_for('predict_datapoints') }}"
+                method="POST"
+                id="predictionForm"
+            >
+
+
+                <!-- =================================================
+                     PERSONAL
+                ================================================== -->
+
+                <section class="section">
+
+                    <div class="section-header">
+
+                        <div class="section-icon">
+
+                            <i class="fa-solid fa-user"></i>
+
+                        </div>
+
+                        <div class="section-title">
+
+                            <h2>Personal Profile</h2>
+
+                            <p>Basic student information</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="grid">
+
+
+                        <!-- Gender -->
+
+                        <div class="field">
+
+                            <label for="gender">
+                                Gender
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fa-solid fa-venus-mars"></i>
+
+                                <select
+                                    name="gender"
+                                    id="gender"
+                                    required
+                                >
+
+                                    <option value=""
+                                            disabled
+                                            {% if not request.form.get('gender') %}
+                                            selected
+                                            {% endif %}>
+                                        Select gender
+                                    </option>
+
+                                    <option value="M"
+                                            {% if request.form.get('gender') == 'M' %}
+                                            selected
+                                            {% endif %}>
+                                        Male (M)
+                                    </option>
+
+                                    <option value="F"
+                                            {% if request.form.get('gender') == 'F' %}
+                                            selected
+                                            {% endif %}>
+                                        Female (F)
+                                    </option>
+
+                                </select>
+
+                                <i class="fa-solid fa-chevron-down arrow"></i>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Work Experience -->
+
+                        <div class="field">
+
+                            <label for="workex">
+                                Work Experience
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fa-solid fa-briefcase"></i>
+
+                                <select
+                                    name="workex"
+                                    id="workex"
+                                    required
+                                >
+
+                                    <option value=""
+                                            disabled
+                                            {% if not request.form.get('workex') %}
+                                            selected
+                                            {% endif %}>
+                                        Select experience
+                                    </option>
+
+                                    <option value="No"
+                                            {% if request.form.get('workex') == 'No' %}
+                                            selected
+                                            {% endif %}>
+                                        No
+                                    </option>
+
+                                    <option value="Yes"
+                                            {% if request.form.get('workex') == 'Yes' %}
+                                            selected
+                                            {% endif %}>
+                                        Yes
+                                    </option>
+
+                                </select>
+
+                                <i class="fa-solid fa-chevron-down arrow"></i>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =================================================
+                     SSC
+                ================================================== -->
+
+                <section class="section">
+
+                    <div class="section-header">
+
+                        <div class="section-icon">
+
+                            <i class="fa-solid fa-school"></i>
+
+                        </div>
+
+                        <div class="section-title">
+
+                            <h2>Secondary Education</h2>
+
+                            <p>SSC / 10th standard performance</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="grid">
+
+
+                        <!-- SSC Percentage -->
+
+                        <div class="field">
+
+                            <label for="ssc_p">
+                                SSC Percentage
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fa-solid fa-percent"></i>
+
+                                <input
+                                    type="number"
+                                    name="ssc_p"
+                                    id="ssc_p"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    placeholder="e.g. 78.50"
+                                    value="{{ request.form.get('ssc_p', '') }}"
+                                    required
+                                >
+
+                                <span class="percent">%</span>
+
+                            </div>
+
+                            <div class="field-hint">
+                                Enter a value between 0 and 100
+                            </div>
+
+                        </div>
+
+
+                        <!-- SSC Board -->
+
+                        <div class="field">
+
+                            <label for="ssc_b">
+                                SSC Board
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fa-solid fa-building-columns"></i>
+
+                                <select
+                                    name="ssc_b"
+                                    id="ssc_b"
+                                    required
+                                >
+
+                                    <option value=""
+                                            disabled
+                                            {% if not request.form.get('ssc_b') %}
+                                            selected
+                                            {% endif %}>
+                                        Select board
+                                    </option>
+
+                                    <option value="Others"
+                                            {% if request.form.get('ssc_b') == 'Others' %}
+                                            selected
+                                            {% endif %}>
+                                        Others
+                                    </option>
+
+                                    <option value="Central"
+                                            {% if request.form.get('ssc_b') == 'Central' %}
+                                            selected
+                                            {% endif %}>
+                                        Central
+                                    </option>
+
+                                </select>
+
+                                <i class="fa-solid fa-chevron-down arrow"></i>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =================================================
+                     HSC
+                ================================================== -->
+
+                <section class="section">
+
+                    <div class="section-header">
+
+                        <div class="section-icon">
+
+                            <i class="fa-solid fa-graduation-cap"></i>
+
+                        </div>
+
+                        <div class="section-title">
+
+                            <h2>Higher Secondary Education</h2>
+
+                            <p>HSC / 12th standard information</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="grid">
+
+
+                        <!-- HSC Percentage -->
+
+                        <div class="field">
+
+                            <label for="hsc_p">
+                                HSC Percentage
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fa-solid fa-percent"></i>
+
+                                <input
+                                    type="number"
+                                    name="hsc_p"
+                                    id="hsc_p"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    placeholder="e.g. 82.40"
+                                    value="{{ request.form.get('hsc_p', '') }}"
+                                    required
+                                >
+
+                                <span class="percent">%</span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- HSC Board -->
+
+                        <div class="field">
+
+                            <label for="hsc_b">
+                                HSC Board
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fa-solid fa-building-columns"></i>
+
+                                <select
+                                    name="hsc_b"
+                                    id="hsc_b"
+                                    required
+                                >
+
+                                    <option value=""
+                                            disabled
+                                            {% if not request.form.get('hsc_b') %}
+                                            selected
+                                            {% endif %}>
+                                        Select board
+                                    </option>
+
+                                    <option value="Others"
+                                            {% if request.form.get('hsc_b') == 'Others' %}
+                                            selected
+                                            {% endif %}>
+                                        Others
+                                    </option>
+
+                                    <option value="Central"
+                                            {% if request.form.get('hsc_b') == 'Central' %}
+                                            selected
+                                            {% endif %}>
+                                        Central
+                                    </option>
+
+                                </select>
+
+                                <i class="fa-solid fa-chevron-down arrow"></i>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- HSC Stream -->
+
+                        <div class="field full">
+
+                            <label for="hsc_s">
+                                HSC Stream
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fa-solid fa-book-open"></i>
+
+                                <select
+                                    name="hsc_s"
+                                    id="hsc_s"
+                                    required
+                                >
+
+                                    <option value=""
+                                            disabled
+                                            {% if not request.form.get('hsc_s') %}
+                                            selected
+                                            {% endif %}>
+                                        Select stream
+                                    </option>
+
+                                    <option value="Commerce"
+                                            {% if request.form.get('hsc_s') == 'Commerce' %}
+                                            selected
+                                            {% endif %}>
+                                        Commerce
+                                    </option>
+
+                                    <option value="Science"
+                                            {% if request.form.get('hsc_s') == 'Science' %}
+                                            selected
+                                            {% endif %}>
+                                        Science
+                                    </option>
+
+                                    <option value="Arts"
+                                            {% if request.form.get('hsc_s') == 'Arts' %}
+                                            selected
+                                            {% endif %}>
+                                        Arts
+                                    </option>
+
+                                </select>
+
+                                <i class="fa-solid fa-chevron-down arrow"></i>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =================================================
+                     DEGREE
+                ================================================== -->
+
+                <section class="section">
+
+                    <div class="section-header">
+
+                        <div class="section-icon">
+
+                            <i class="fa-solid fa-university"></i>
+
+                        </div>
+
+                        <div class="section-title">
+
+                            <h2>Undergraduate Education</h2>
+
+                            <p>Degree performance and discipline</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="grid">
+
+
+                        <!-- Degree Percentage -->
+
+                        <div class="field">
+
+                            <label for="degree_p">
+                                Degree Percentage
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fa-solid fa-chart-line"></i>
+
+                                <input
+                                    type="number"
+                                    name="degree_p"
+                                    id="degree_p"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    placeholder="e.g. 76.20"
+                                    value="{{ request.form.get('degree_p', '') }}"
+                                    required
+                                >
+
+                                <span class="percent">%</span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Degree Type -->
+
+                        <div class="field">
+
+                            <label for="degree_t">
+                                Degree Type
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fa-solid fa-code-branch"></i>
+
+                                <select
+                                    name="degree_t"
+                                    id="degree_t"
+                                    required
+                                >
+
+                                    <option value=""
+                                            disabled
+                                            {% if not request.form.get('degree_t') %}
+                                            selected
+                                            {% endif %}>
+                                        Select degree type
+                                    </option>
+
+                                    <option value="Sci&Tech"
+                                            {% if request.form.get('degree_t') == 'Sci&Tech' %}
+                                            selected
+                                            {% endif %}>
+                                        Sci &amp; Tech
+                                    </option>
+
+                                    <option value="Comm&Mgmt"
+                                            {% if request.form.get('degree_t') == 'Comm&Mgmt' %}
+                                            selected
+                                            {% endif %}>
+                                        Commerce &amp; Management
+                                    </option>
+
+                                    <option value="Others"
+                                            {% if request.form.get('degree_t') == 'Others' %}
+                                            selected
+                                            {% endif %}>
+                                        Others
+                                    </option>
+
+                                </select>
+
+                                <i class="fa-solid fa-chevron-down arrow"></i>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =================================================
+                     MBA
+                ================================================== -->
+
+                <section class="section">
+
+                    <div class="section-header">
+
+                        <div class="section-icon">
+
+                            <i class="fa-solid fa-chart-pie"></i>
+
+                        </div>
+
+                        <div class="section-title">
+
+                            <h2>MBA Profile</h2>
+
+                            <p>Management education and employability</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="grid">
+
+
+                        <!-- ETEST -->
+
+                        <div class="field">
+
+                            <label for="etest_p">
+                                Employability Test
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fa-solid fa-laptop-code"></i>
+
+                                <input
+                                    type="number"
+                                    name="etest_p"
+                                    id="etest_p"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    placeholder="e.g. 75.00"
+                                    value="{{ request.form.get('etest_p', '') }}"
+                                    required
+                                >
+
+                                <span class="percent">%</span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Specialisation -->
+
+                        <div class="field">
+
+                            <label for="specialisation">
+                                MBA Specialisation
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fa-solid fa-layer-group"></i>
+
+                                <select
+                                    name="specialisation"
+                                    id="specialisation"
+                                    required
+                                >
+
+                                    <option value=""
+                                            disabled
+                                            {% if not request.form.get('specialisation') %}
+                                            selected
+                                            {% endif %}>
+                                        Select specialisation
+                                    </option>
+
+                                    <option value="Mkt&HR"
+                                            {% if request.form.get('specialisation') == 'Mkt&HR' %}
+                                            selected
+                                            {% endif %}>
+                                        Marketing &amp; HR
+                                    </option>
+
+                                    <option value="Mkt&Fin"
+                                            {% if request.form.get('specialisation') == 'Mkt&Fin' %}
+                                            selected
+                                            {% endif %}>
+                                        Marketing &amp; Finance
+                                    </option>
+
+                                </select>
+
+                                <i class="fa-solid fa-chevron-down arrow"></i>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- MBA Percentage -->
+
+                        <div class="field full">
+
+                            <label for="mba_p">
+                                MBA Percentage
+                            </label>
+
+                            <div class="input-box">
+
+                                <i class="fa-solid fa-percent"></i>
+
+                                <input
+                                    type="number"
+                                    name="mba_p"
+                                    id="mba_p"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    placeholder="e.g. 80.00"
+                                    value="{{ request.form.get('mba_p', '') }}"
+                                    required
+                                >
+
+                                <span class="percent">%</span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =================================================
+                     BUTTON
+                ================================================== -->
+
+                <div class="submit-area">
+
+                    <button
+                        type="submit"
+                        class="predict-btn"
+                        id="predictButton"
+                    >
+
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                        &nbsp;&nbsp;
+
+                        Predict Placement
+
+                        &nbsp;&nbsp;
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                    </button>
+
+
+                    <p class="privacy">
+
+                        <i class="fa-solid fa-shield-halved"></i>
+
+                        Your data is processed by the trained ML prediction pipeline.
+
+                    </p>
+
+                </div>
+
+            </form>
+
+
+            <!-- =====================================================
+                 RESULT
+            ====================================================== -->
+
+            {% if results is defined %}
+
+                {% if results == 1 %}
+
+                    <div class="result placed" id="result">
+
+                        <div class="result-icon">
+
+                            <i class="fa-solid fa-circle-check"></i>
+
+                        </div>
+
+                        <h2>
+                            Student Placed
+                        </h2>
+
+                        <p>
+                            The machine learning model predicts
+                            that this student is likely to be
+                            <strong>Placed</strong>.
+                        </p>
+
+                        <div class="result-badge">
+
+                            <i class="fa-solid fa-check"></i>
+
+                            PREDICTION: PLACED
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="result not-placed" id="result">
+
+                        <div class="result-icon">
+
+                            <i class="fa-solid fa-circle-xmark"></i>
+
+                        </div>
+
+                        <h2>
+                            Student Not Placed
+                        </h2>
+
+                        <p>
+                            The machine learning model predicts
+                            that this student is likely to be
+                            <strong>Not Placed</strong>.
+                        </p>
+
+                        <div class="result-badge">
+
+                            <i class="fa-solid fa-xmark"></i>
+
+                            PREDICTION: NOT PLACED
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            {% endif %}
+
+
+        </div>
+
+    </main>
+
+
+    <!-- =========================================================
+         FOOTER
+    ========================================================= -->
+
+    <footer>
+
+        Powered by
+
+        <strong>Machine Learning</strong>
+
+        · Student Placement Prediction System
+
+    </footer>
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+    ========================================================= -->
+
+    <script>
+
+        /* ---------------------------------------------------------
+           Percentage validation
+        --------------------------------------------------------- */
+
+        const percentageFields = [
+            "ssc_p",
+            "hsc_p",
+            "degree_p",
+            "etest_p",
+            "mba_p"
+        ];
+
+        percentageFields.forEach(function(id) {
+
+            const input =
+                document.getElementById(id);
+
+            if (!input) return;
+
+            input.addEventListener(
+                "input",
+                function() {
+
+                    let value =
+                        parseFloat(this.value);
+
+                    if (value > 100) {
+                        this.value = 100;
+                    }
+
+                    if (value < 0) {
+                        this.value = 0;
+                    }
+
+                }
+            );
+
+        });
+
+
+        /* ---------------------------------------------------------
+           Loading state
+        --------------------------------------------------------- */
+
+        const form =
+            document.getElementById(
+                "predictionForm"
+            );
+
+        const button =
+            document.getElementById(
+                "predictButton"
+            );
+
+        form.addEventListener(
+            "submit",
+            function() {
+
+                button.disabled = true;
+
+                button.innerHTML =
+                    '<i class="fa-solid fa-circle-notch fa-spin"></i>' +
+                    '&nbsp;&nbsp; Analyzing Student Profile...';
+
+            }
+        );
+
+
+        /* ---------------------------------------------------------
+           Scroll to result after prediction
+        --------------------------------------------------------- */
+
+        const result =
+            document.getElementById("result");
+
+        if (result) {
+
+            setTimeout(function() {
+
+                result.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+
+            }, 300);
+
+        }
+
+    </script>
+
+</body>
+
+</html>
+```

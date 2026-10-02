@@ -28,7 +28,7 @@ class DataTransformation:
         
     def get_data_transformer_object(self):
         try:
-            numerical_features=['sl_no', 'ssc_p', 'hsc_p', 'degree_p', 'etest_p', 'mba_p']
+            numerical_features=['ssc_p', 'hsc_p', 'degree_p', 'etest_p', 'mba_p']
             categorical_features=['gender', 'ssc_b', 'hsc_b', 'hsc_s', 'degree_t', 'workex',
        'specialisation']
             num_pipeline=Pipeline(
