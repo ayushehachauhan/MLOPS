@@ -10,52 +10,73 @@ jobs:
 
     steps:
 
-    # 1. Get project code
-    - name: Checkout code
-      uses: actions/checkout@v4
+      # 1. Get project code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    # 2. Configure AWS
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v6
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+      # 2. Check whether AWS credentials are available
+      - name: Check AWS credentials availability
+        run: |
+          if [ -n "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then
+            echo "AWS_ACCESS_KEY_ID is PRESENT"
+          else
+            echo "AWS_ACCESS_KEY_ID is EMPTY"
+          fi
 
-    # 3. Login to ECR
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
+          if [ -n "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
+            echo "AWS_SECRET_ACCESS_KEY is PRESENT"
+          else
+            echo "AWS_SECRET_ACCESS_KEY is EMPTY"
+          fi
 
-    # 4. Build and push Docker image
-    - name: Build and Push Docker Image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
-        IMAGE_TAG: latest
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          if [ -n "${{ secrets.AWS_REGION }}" ]; then
+            echo "AWS_REGION is PRESENT"
+          else
+            echo "AWS_REGION is EMPTY"
+          fi
 
-    # 5. Deploy to EC2
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@v1.2.2
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
-          docker login \
-          --username AWS \
-          --password-stdin ${{ secrets.AWS_ECR_LOGIN_URL }}
+      # 3. Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-          docker pull ${{ secrets.AWS_ECR_LOGIN_URL }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+      # 4. Login to Amazon ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-          docker stop student_placement_container || true
-          docker rm student_placement_container || true
+      # 5. Build and push Docker image to ECR
+      - name: Build and Push Docker Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
+          IMAGE_TAG: latest
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-          docker run -d \
-            --name student_placement_container \
-            -p 5000:5000 \
-            ${{ secrets.AWS_ECR_LOGIN_URL }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+      # 6. Deploy the image to EC2
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+            docker login \
+              --username AWS \
+              --password-stdin ${{ secrets.AWS_ECR_LOGIN_URL }}
+
+            docker pull ${{ secrets.AWS_ECR_LOGIN_URL }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+
+            docker stop student_placement_container || true
+            docker rm student_placement_container || true
+
+            docker run -d \
+              --name student_placement_container \
+              -p 5000:5000 \
+              ${{ secrets.AWS_ECR_LOGIN_URL }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
