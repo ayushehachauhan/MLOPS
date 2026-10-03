@@ -7,6 +7,7 @@ from src.pipeline.predict_pipeline import CustomData,PredictPipeline
 #demo commit 2
 #demo commit 3
 #demo commit 4
+#worklfow check1
 from sklearn.preprocessing import StandardScaler
 
 application=Flask(__name__)
